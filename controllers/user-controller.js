@@ -111,8 +111,51 @@ const UserController = {
     }
   },
   updateUser: async (req, res) => {
-    res.send('UpdateUser ok')
+    const { id } = req.params
+    const { email, name, dateOfBirth, bio, location } = req.body
+
+    let filePath
+
+    if (req.file && req.file.path) {
+      filePath = req.file.path
+    }
+    // Check if the user updates own informations
+    if (id !== req.user.userId) {
+      return res
+        .status(403)
+        .json({ error: 'No access. You can update only your personal profile.' })
+    }
+
+    try {
+      // user updates email
+      if (email) {
+        const existingUser = await prisma.user.findFirst({
+          where: { email },
+        })
+
+        if (existingUser && existingUser.id !== parseInt(id)) {
+          return res.status(400).json({ error: 'User with such email already exist' })
+        }
+      }
+      // user updates the other fields. Note - undefined means field still the same.
+      const user = await prisma.user.update({
+        where: { id },
+        data: {
+          email: email || undefined,
+          name: name || undefined,
+          avatarUrl: filePath ? `/${filePath}` : undefined,
+          dateOfBirth: dateOfBirth || undefined,
+          bio: bio || undefined,
+          location: location || undefined,
+        },
+      })
+      res.json(user)
+    } catch (error) {
+      console.log('error', error)
+      res.status(500).json({ error: 'Internal server error' })
+    }
   },
+
   current: async (req, res) => {
     res.send('Current ok')
   },
