@@ -1,26 +1,29 @@
-const bcrypt = require("bcryptjs");
-const path = require("path");
-const fs = require('fs');
-const { prisma } = require("../prisma/prisma-client");
-const Jdenticon = require('jdenticon');
+const bcrypt = require('bcryptjs')
+const path = require('path')
+const fs = require('fs')
+const { prisma } = require('../prisma/prisma-client')
+const Jdenticon = require('jdenticon')
+const jwt = require('jsonwebtoken')
 
 const UserController = {
   register: async (req, res) => {
     const { email, password, name } = req.body
 
-    // Checked if the all fields is filled in 
+    // Checked if the all fields is filled in
     if (!email || !password || !name) {
-      return res.status(400).json({ error: 'Pleace, fill in all the fields. All the fields are required!' })
+      return res
+        .status(400)
+        .json({ error: 'Please, fill in all the fields. All the fields are required!' })
     }
 
     try {
-      // Checked if user with such email already exist 
+      // Checked if user with such email already exist
       const existingUser = await prisma.user.findUnique({ where: { email } })
       if (existingUser) {
         return res.status(400).json({ error: 'User with such email already exist' })
       }
 
-      // Hashed name
+      // Hashed password
       const hashedPassword = await bcrypt.hash(password, 10)
 
       // Generated avatar for user
@@ -46,7 +49,37 @@ const UserController = {
     }
   },
   login: async (req, res) => {
-    res.send('Login ok')
+    const { email, password } = req.body
+
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ error: 'Please, fill in all the fields. All the fields are required!' })
+    }
+
+    try {
+      // Find the user
+      const user = await prisma.user.findUnique({ where: { email } })
+
+      if (!user) {
+        return res.status(400).json({ error: 'Incorrect password or login!' })
+      }
+
+      // Check the password
+      const valid = await bcrypt.compare(password, user.password)
+
+      if (!valid) {
+        return res.status(400).json({ error: 'Incorrect password or login!' })
+      }
+
+      // Generate a JWT
+      const token = jwt.sign({ userId: user.id }, process.env.SECRET_KEY)
+
+      res.json({ token })
+    } catch (error) {
+      console.error('Error in login:', error)
+      res.status(500).json({ error: 'Internal server error' })
+    }
   },
   getUserById: async (req, res) => {
     res.send('GetUserById ok')
