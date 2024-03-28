@@ -87,17 +87,17 @@ const PostController = {
   },
 
   deletePost: async (req, res) => {
-    const { id } = req.params;
+    const { id } = req.params
 
     // Проверка, что пользователь удаляет свой пост
-    const post = await prisma.post.findUnique({ where: { id } });
+    const post = await prisma.post.findUnique({ where: { id } })
 
     if (!post) {
-      return res.status(404).json({ error: "Пост не найден" });
+      return res.status(404).json({ error: 'Post not found' })
     }
 
     if (post.authorId !== req.user.userId) {
-      return res.status(403).json({ error: "No access. You can delete only your post." });
+      return res.status(403).json({ error: 'No access. You can delete only your post.' })
     }
 
     try {
@@ -105,11 +105,44 @@ const PostController = {
         prisma.comment.deleteMany({ where: { postId: id } }),
         prisma.like.deleteMany({ where: { postId: id } }),
         prisma.post.delete({ where: { id } }),
-      ]);
+      ])
 
-      res.json(transaction);
+      res.json(transaction)
     } catch (error) {
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Internal server error' })
+    }
+  },
+  updatePost: async (req, res) => {
+    const { id } = req.params
+    const { content } = req.body
+
+    if (!content) {
+      res.status(404).json({ error: 'Please, fill in content field!' })
+    }
+
+    try {
+      const post = await prisma.post.findUnique({ where: { id } })
+
+      if (!post) {
+        return res.status(404).json({ error: 'Post not found' })
+      }
+
+      if (post.authorId !== req.user.userId) {
+        return res.status(403).json({ error: 'No access. You can update only your post.' })
+      }
+
+      const updatedPost = await prisma.post.update({
+        where: { id },
+        data: {
+          content,
+        },
+      })
+
+      res.status(200).json(updatedPost)
+    } catch (error) {
+      console.error('Update post error', error)
+
+      res.status(500).json({ error: 'Internal server error' })
     }
   },
 }
