@@ -1,7 +1,7 @@
 var express = require('express')
 var router = express.Router()
 const multer = require('multer')
-const { UserController, PostController } = require('../controllers')
+const { UserController, PostController, CommentController } = require('../controllers')
 const { authenticateToken } = require('../middleware/auth')
 
 const uploadDestination = 'uploads'
@@ -24,10 +24,15 @@ router.get('/current', authenticateToken, UserController.current)
 router.put('/users/:id', authenticateToken, UserController.updateUser)
 
 // Posts routers
-router.post("/posts", authenticateToken, PostController.createPost);
-router.get("/posts", authenticateToken, PostController.getAllPosts);
-router.get("/posts/:id", authenticateToken, PostController.getPostById);
-router.delete("/posts/:id", authenticateToken, PostController.deletePost);
-router.patch("/posts/:id", authenticateToken, PostController.updatePost);
+router.post('/posts', authenticateToken, PostController.createPost)
+router.get('/posts', authenticateToken, PostController.getAllPosts)
+router.get('/posts/:id', authenticateToken, PostController.getPostById)
+router.delete('/posts/:id', authenticateToken, PostController.deletePost)
+router.patch('/posts/:id', authenticateToken, PostController.updatePost)
+
+// Comments routers
+router.post('/comments', authenticateToken, CommentController.createComment)
+router.delete('/comments/:id', authenticateToken, CommentController.deleteComment)
+router.patch('/comments/:id', authenticateToken, CommentController.updateComment)
 
 module.exports = router
