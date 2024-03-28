@@ -1,7 +1,7 @@
 var express = require('express')
 var router = express.Router()
 const multer = require('multer')
-const { UserController, PostController, CommentController } = require('../controllers')
+const { UserController, PostController, CommentController, LikeController } = require('../controllers')
 const { authenticateToken } = require('../middleware/auth')
 
 const uploadDestination = 'uploads'
@@ -34,5 +34,9 @@ router.patch('/posts/:id', authenticateToken, PostController.updatePost)
 router.post('/comments', authenticateToken, CommentController.createComment)
 router.delete('/comments/:id', authenticateToken, CommentController.deleteComment)
 router.patch('/comments/:id', authenticateToken, CommentController.updateComment)
+
+// Likes routers
+router.post("/likes", authenticateToken, LikeController.likePost);
+router.delete("/likes/:id", authenticateToken, LikeController.unlikePost);
 
 module.exports = router
