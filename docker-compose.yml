@@ -6,6 +6,7 @@ services:
       - '3000:3000'
     depends_on:
       - db
+      - react-app
     environment:
       DATABASE_URL: 'mongodb://admin:admin@db:27017/mydatabase?authSource=admin&directConnection=true'
  db: # Database
@@ -15,3 +16,10 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin
+ react-app: # React-app
+    build: ../social-media-react-client # Way to React-app relative root of current project
+    ports:
+      - '80:80' # Port of React-app
+      - '8000:8000' # Port of React-app
+volumes:
+ react_app: # Declaring a named volume
