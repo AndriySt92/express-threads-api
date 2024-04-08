@@ -179,8 +179,8 @@ const UserController = {
       }
 
       const { password, ...userInfo} = {user}
-
-      return res.status(200).json(userInfo)
+      
+      return res.status(200).json(userInfo.user)
     } catch (error) {
       console.log('err', error)
       res.status(500).json({ error: 'Internal server error' })
